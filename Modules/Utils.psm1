@@ -251,6 +251,11 @@ function Get-ContactHash {
 
     $String += $User.GivenName
 
+    if($User.PSObject.Properties.Name -contains "MiddleName")
+    {
+        $String += $User.MiddleName
+    }
+
     $String += $User.Surname
 
     $String += $User.Department

@@ -454,6 +454,8 @@ function ConvertFrom-VCard {
 
         GivenName = ""
 
+        MiddleName = ""
+
         Surname = ""
 
         Department = ""
@@ -514,6 +516,11 @@ function ConvertFrom-VCard {
                 if($Parts.Count -gt 1)
                 {
                     $Contact.GivenName = $Parts[1]
+                }
+
+                if($Parts.Count -gt 2)
+                {
+                    $Contact.MiddleName = $Parts[2]
                 }
 
                 if($ShouldCheckEncoding -and (Test-TextContainsNonAscii $NameValue))

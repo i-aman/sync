@@ -101,9 +101,10 @@ function Get-VCardName {
 
     param($User)
 
-    return "{0};{1};;;" -f `
+    return "{0};{1};{2};;" -f `
         (Escape-VCardText $User.Surname),
-        (Escape-VCardText $User.GivenName)
+        (Escape-VCardText $User.GivenName),
+        (Escape-VCardText $User.MiddleName)
 
 }
 

@@ -50,6 +50,7 @@ function Get-ADContacts {
         @($Config.Properties) + @(
             "displayName",
             "givenName",
+            "middleName",
             "sn",
             "department",
             "title",
@@ -120,6 +121,8 @@ function ConvertTo-ContactObject {
         DisplayName = Normalize-String $User.DisplayName
 
         GivenName = Normalize-String $User.GivenName
+
+        MiddleName = Normalize-String $User.MiddleName
 
         Surname = Normalize-String $User.Surname
 
