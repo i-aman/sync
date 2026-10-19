@@ -15,7 +15,7 @@ Set-StrictMode -Version Latest
 
 # Проверка существования каталога
 
-function Ensure-Directory {
+function Initialize-Directory {
 
     param(
         [Parameter(Mandatory)]
@@ -95,7 +95,7 @@ function Get-CardDAVDate {
 
 # Очистка строки
 
-function Normalize-String {
+function ConvertTo-NormalizedString {
 
     param(
         [string]$Text
@@ -112,7 +112,7 @@ function Normalize-String {
 
 # Email 
 
-function Normalize-Email {
+function ConvertTo-NormalizedEmail {
 
     param(
         [string]$Mail
@@ -307,7 +307,7 @@ function Stop-Timer {
 
 # Export
 
-Export-ModuleMember -Function Ensure-Directory
+Export-ModuleMember -Function Initialize-Directory
 
 Export-ModuleMember -Function Get-SHA256
 
@@ -315,9 +315,9 @@ Export-ModuleMember -Function Convert-ToBase64
 
 Export-ModuleMember -Function New-GuidString
 
-Export-ModuleMember -Function Normalize-String
+Export-ModuleMember -Function ConvertTo-NormalizedString
 
-Export-ModuleMember -Function Normalize-Email
+Export-ModuleMember -Function ConvertTo-NormalizedEmail
 
 Export-ModuleMember -Function Test-Mail
 
@@ -338,4 +338,3 @@ Export-ModuleMember -Function Get-CardDAVDate
 Export-ModuleMember -Function Start-Timer
 
 Export-ModuleMember -Function Stop-Timer
-

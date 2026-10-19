@@ -118,27 +118,27 @@ function ConvertTo-ContactObject {
 
     return [PSCustomObject]@{
 
-        DisplayName = Normalize-String $User.DisplayName
+        DisplayName = ConvertTo-NormalizedString $User.DisplayName
 
-        GivenName = Normalize-String $User.GivenName
+        GivenName = ConvertTo-NormalizedString $User.GivenName
 
-        MiddleName = Normalize-String $User.MiddleName
+        MiddleName = ConvertTo-NormalizedString $User.MiddleName
 
-        Surname = Normalize-String $User.Surname
+        Surname = ConvertTo-NormalizedString $User.Surname
 
-        Department = Normalize-String $User.Department
+        Department = ConvertTo-NormalizedString $User.Department
 
-        Title = Normalize-String $User.Title
+        Title = ConvertTo-NormalizedString $User.Title
 
-        Company = Normalize-String $User.Company
+        Company = ConvertTo-NormalizedString $User.Company
 
-        Mail = Normalize-Email $User.Mail
+        Mail = ConvertTo-NormalizedEmail $User.Mail
 
-        OfficePhone = Normalize-String $User.telephoneNumber
+        OfficePhone = ConvertTo-NormalizedString $User.telephoneNumber
 
-        MobilePhone = Normalize-String $User.mobile
+        MobilePhone = ConvertTo-NormalizedString $User.mobile
 
-        WebPage = Normalize-String $User.wWWHomePage
+        WebPage = ConvertTo-NormalizedString $User.wWWHomePage
 
         Hash = ""
 
@@ -312,4 +312,3 @@ Export-ModuleMember -Function Test-ADConnection
 Export-ModuleMember -Function Get-ValidContacts
 
 Export-ModuleMember -Function ConvertTo-ContactObject
-

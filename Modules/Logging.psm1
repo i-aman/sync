@@ -164,7 +164,7 @@ function Start-Section {
 
 }
 
-function End-Section {
+function Complete-Section {
 
     param(
         [string]$Name
@@ -304,7 +304,7 @@ Export-ModuleMember `
     -Function Start-Section
 
 Export-ModuleMember `
-    -Function End-Section
+    -Function Complete-Section
 
 Export-ModuleMember `
     -Function Write-Statistics
