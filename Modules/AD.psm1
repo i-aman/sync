@@ -152,7 +152,7 @@ function ConvertTo-ContactObject {
 
 # Сортировка
 
-function Sort-Contacts {
+function Get-SortedContacts {
 
     param($Contacts)
 
@@ -190,7 +190,7 @@ function Find-DuplicateEmails {
 
 # Проверка пользователей
 
-function Validate-Contacts {
+function Get-ValidContacts {
 
     param($Users)
 
@@ -271,9 +271,9 @@ function Get-DirectoryUsers {
 
     $Users = @(Get-ADContacts)
 
-    $Users = @(Validate-Contacts $Users)
+    $Users = @(Get-ValidContacts $Users)
 
-    $Users = @(Sort-Contacts $Users)
+    $Users = @(Get-SortedContacts $Users)
 
     $Duplicates = @(Find-DuplicateEmails $Users)
 
@@ -309,9 +309,7 @@ Export-ModuleMember -Function Get-ADContacts
 
 Export-ModuleMember -Function Test-ADConnection
 
-Export-ModuleMember -Function Validate-Contacts
+Export-ModuleMember -Function Get-ValidContacts
 
 Export-ModuleMember -Function ConvertTo-ContactObject
-
-
 
