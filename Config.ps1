@@ -34,13 +34,13 @@ $Global:Config = @{
 
     Server = "https://cloud.smk.local"
 
-    AddressBook = "smk-corporate-directory"
+    AddressBook = "cmk"
 
     Username = "svc_carddav"
 
     Password = 'Aaq1w2e3r$$'
 
-    UserId = "5FFDDD63-0B7D-4084-9791-CC436D9DFC52"
+    UserId = "svc_carddav"
 
     LogRoot = "F:\Logs"
 
@@ -50,7 +50,7 @@ $Global:Config = @{
     # CardDAV
     ########################################################################
 
-    CardDAVUri = "/remote.php/dav/addressbooks/users"
+    CardDAVUri = "/remote.php/dav/addressbooks/users/svc_carddav/cmk"
 
     Timeout = 60
 
