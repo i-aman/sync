@@ -453,6 +453,7 @@ function Confirm-CardDAVContactName {
 
     if([string]::IsNullOrWhiteSpace($ExpectedMiddleName))
     {
+        Write-Log "Cannot verify the additional name because Active Directory returned an empty middleName." "WARN"
         return
     }
 
