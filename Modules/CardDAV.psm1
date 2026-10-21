@@ -433,6 +433,45 @@ function Get-CardDAVContact {
 }
 
 #------------------------------------------------------------------------------
+# Verify that CardDAV retained the additional name
+#------------------------------------------------------------------------------
+
+function Confirm-CardDAVContactName {
+
+    param(
+
+        [Parameter(Mandatory)]
+        $User,
+
+        [Parameter(Mandatory)]
+        [string]$Href
+
+    )
+
+    $ExpectedMiddleName = ConvertTo-NormalizedString $User.MiddleName
+
+    if([string]::IsNullOrWhiteSpace($ExpectedMiddleName))
+    {
+        return
+    }
+
+    $SavedContact = Get-CardDAVContact `
+        -Href $Href `
+        -ETag ""
+
+    $SavedMiddleName = ConvertTo-NormalizedString $SavedContact.MiddleName
+
+    if($SavedMiddleName -ne $ExpectedMiddleName)
+    {
+        Write-Log "CardDAV did not retain the additional name for $($User.DisplayName)." "ERROR"
+        throw "CardDAV contact verification failed: additional name was not retained."
+    }
+
+    Write-Log "Verified additional name for $($User.DisplayName)." "SUCCESS"
+
+}
+
+#------------------------------------------------------------------------------
 # Parse vCard
 #------------------------------------------------------------------------------
 
@@ -636,6 +675,12 @@ function Add-CardDAVContact {
         } `
         -Body $VCard
 
+    $Href = ([System.Uri]$Uri).AbsolutePath
+
+    Confirm-CardDAVContactName `
+        -User $User `
+        -Href $Href
+
     Write-Log "Created: $($User.DisplayName)" "SUCCESS"
 
 }
@@ -670,6 +715,10 @@ function Update-CardDAVContact {
             "If-Match" = $Remote.ETag
         } `
         -Body $VCard
+
+    Confirm-CardDAVContactName `
+        -User $User `
+        -Href $Remote.Href
 
     Write-Log "Updated: $($User.DisplayName)" "SUCCESS"
 
