@@ -116,15 +116,36 @@ function ConvertTo-ContactObject {
 
     )
 
+    $DisplayName = ConvertTo-NormalizedString $User.DisplayName
+    $GivenName = ConvertTo-NormalizedString $User.GivenName
+    $Surname = ConvertTo-NormalizedString $User.Surname
+    $MiddleName = ConvertTo-NormalizedString $User.MiddleName
+
+    if([string]::IsNullOrWhiteSpace($MiddleName) -and
+       -not [string]::IsNullOrWhiteSpace($DisplayName) -and
+       -not [string]::IsNullOrWhiteSpace($GivenName) -and
+       -not [string]::IsNullOrWhiteSpace($Surname))
+    {
+        $NameParts = @($DisplayName -split '\s+')
+
+        if($NameParts.Count -eq 3 -and
+           $NameParts[0] -eq $Surname -and
+           $NameParts[1] -eq $GivenName)
+        {
+            $MiddleName = $NameParts[2]
+            Write-Log "Middle name inferred from DisplayName because AD middleName is empty: $DisplayName" "WARN"
+        }
+    }
+
     return [PSCustomObject]@{
 
-        DisplayName = ConvertTo-NormalizedString $User.DisplayName
+        DisplayName = $DisplayName
 
-        GivenName = ConvertTo-NormalizedString $User.GivenName
+        GivenName = $GivenName
 
-        MiddleName = ConvertTo-NormalizedString $User.MiddleName
+        MiddleName = $MiddleName
 
-        Surname = ConvertTo-NormalizedString $User.Surname
+        Surname = $Surname
 
         Department = ConvertTo-NormalizedString $User.Department
 
