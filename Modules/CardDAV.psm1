@@ -600,9 +600,11 @@ function ConvertFrom-VCard {
 
     }
 
-    $Contact.Hash = Get-ContactHash $Contact
+    $ContactObject = [PSCustomObject]$Contact
 
-    return [PSCustomObject]$Contact
+    $ContactObject.Hash = Get-ContactHash $ContactObject
+
+    return $ContactObject
 
 }
 
@@ -889,4 +891,3 @@ Export-ModuleMember `
               Test-CardDAVContact,
               Get-CardDAVStatistics,
               Invoke-CardDAV
-

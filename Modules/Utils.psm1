@@ -127,6 +127,38 @@ function ConvertTo-NormalizedEmail {
 
 }
 
+# Отображаемое имя контакта
+
+function Get-ContactDisplayName {
+
+    param(
+        $Contact
+    )
+
+    $DisplayName = ConvertTo-NormalizedString $Contact.DisplayName
+
+    if ($Contact.PSObject.Properties.Name -notcontains "MiddleName") {
+        return $DisplayName
+    }
+
+    $MiddleName = ConvertTo-NormalizedString $Contact.MiddleName
+
+    if ([string]::IsNullOrWhiteSpace($MiddleName)) {
+        return $DisplayName
+    }
+
+    if (($DisplayName -split '\s+') -contains $MiddleName) {
+        return $DisplayName
+    }
+
+    if ([string]::IsNullOrWhiteSpace($DisplayName)) {
+        return $MiddleName
+    }
+
+    return "$DisplayName $MiddleName"
+
+}
+
 # Check email 
 
 function Test-Mail {
@@ -247,7 +279,7 @@ function Get-ContactHash {
 
     $String = @()
 
-    $String += $User.DisplayName
+    $String += Get-ContactDisplayName $User
 
     $String += $User.GivenName
 
@@ -318,6 +350,8 @@ Export-ModuleMember -Function New-GuidString
 Export-ModuleMember -Function ConvertTo-NormalizedString
 
 Export-ModuleMember -Function ConvertTo-NormalizedEmail
+
+Export-ModuleMember -Function Get-ContactDisplayName
 
 Export-ModuleMember -Function Test-Mail
 

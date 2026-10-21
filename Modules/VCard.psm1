@@ -114,7 +114,7 @@ function Get-VCardFormattedName {
 
     param($User)
 
-    return Escape-VCardText $User.DisplayName
+    return Escape-VCardText (Get-ContactDisplayName $User)
 
 }
 
