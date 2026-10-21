@@ -410,6 +410,7 @@ function Get-CardDAVContact {
         [string]$Href,
 
         [Parameter(Mandatory)]
+        [AllowEmptyString()]
         [string]$ETag
 
     )
