@@ -66,6 +66,20 @@ function Get-ContactKey {
 
 }
 
+function Get-ContactMailKey {
+
+    param($Contact)
+
+    if ($null -eq $Contact -or
+        $Contact.PSObject.Properties.Name -notcontains "Mail" -or
+        [string]::IsNullOrWhiteSpace($Contact.Mail)) {
+        return ""
+    }
+
+    return ([string]$Contact.Mail).Trim().ToLower()
+
+}
+
 #------------------------------------------------------------------------------
 # Statistics
 #------------------------------------------------------------------------------
@@ -113,16 +127,25 @@ try{
     #
 
     $Remote=@{}
+    $RemoteByMail=@{}
 
     foreach($Item in $RemoteContacts){
 
     $RemoteKey = Get-ContactKey $Item
 
-    if([string]::IsNullOrWhiteSpace($RemoteKey)){
-        continue
+    if(-not [string]::IsNullOrWhiteSpace($RemoteKey)){
+        $Remote[$RemoteKey] = $Item
     }
 
-    $Remote[$RemoteKey] = $Item
+    $MailKey = Get-ContactMailKey $Item
+
+    if(-not [string]::IsNullOrWhiteSpace($MailKey)){
+        if(-not $RemoteByMail.ContainsKey($MailKey)){
+            $RemoteByMail[$MailKey] = @()
+        }
+
+        $RemoteByMail[$MailKey] += $Item
+    }
 
     }
 
@@ -148,9 +171,44 @@ try{
             continue
         }
 
-        if($Remote.ContainsKey($ContactKey)){
+        $Existing = $null
 
-            $Existing=$Remote[$ContactKey]
+        if($Remote.ContainsKey($ContactKey)){
+            $Existing = $Remote[$ContactKey]
+        }
+        else{
+            $MailKey = Get-ContactMailKey $User
+
+            if(-not [string]::IsNullOrWhiteSpace($MailKey) -and
+               $RemoteByMail.ContainsKey($MailKey)){
+
+                $MailMatches = @($RemoteByMail[$MailKey])
+
+                if($MailMatches.Count -eq 1){
+                    $Existing = $MailMatches[0]
+                    Write-Log "Matching existing contact by e-mail: $($User.DisplayName)" "WARN"
+                }
+                elseif($MailMatches.Count -gt 1){
+                    $UidMatches = @(
+                        $MailMatches | Where-Object {
+                            $_.Uid -and
+                            ([string]$_.Uid).Trim().ToLower() -eq $ContactKey
+                        }
+                    )
+
+                    if($UidMatches.Count -eq 1){
+                        $Existing = $UidMatches[0]
+                    }
+                    else{
+                        Write-Log "Ambiguous CardDAV duplicates for e-mail: $MailKey. Skipping contact." "WARN"
+                        $Stats.Skipped++
+                        continue
+                    }
+                }
+            }
+        }
+
+        if($null -ne $Existing){
 
             if($Existing.PSObject.Properties.Name -contains "NeedsEncodingUpgrade" -and $Existing.NeedsEncodingUpgrade)
             {
@@ -197,20 +255,127 @@ try{
     }
 
     #
-    # Delete removed users
+    # Remove duplicate remote contacts when a unique AD user and canonical card are known
     #
 
-    foreach($Contact in $RemoteContacts){
+    $UsersByMail=@{}
 
-        $RemoteKey = Get-ContactKey $Contact
+    foreach($User in $ADUsers){
+        $MailKey = Get-ContactMailKey $User
 
-        if([string]::IsNullOrWhiteSpace($RemoteKey))
-        {
+        if([string]::IsNullOrWhiteSpace($MailKey)){
             continue
         }
 
-        if((@($ADUsers | ForEach-Object { Get-ContactKey $_ })) -contains $RemoteKey)
-        {
+        if(-not $UsersByMail.ContainsKey($MailKey)){
+            $UsersByMail[$MailKey] = @()
+        }
+
+        $UsersByMail[$MailKey] += $User
+    }
+
+    $DeletedHrefs=@{}
+
+    foreach($MailKey in $UsersByMail.Keys){
+        if($UsersByMail[$MailKey].Count -ne 1){
+            continue
+        }
+
+        $User = $UsersByMail[$MailKey][0]
+        $MailMatches = @(
+            $RemoteContacts | Where-Object {
+                (Get-ContactMailKey $_) -eq $MailKey
+            }
+        )
+
+        if($MailMatches.Count -le 1){
+            continue
+        }
+
+        $ContactKey = Get-ContactKey $User
+        $UidMatches = @(
+            $MailMatches | Where-Object {
+                $_.Uid -and
+                ([string]$_.Uid).Trim().ToLower() -eq $ContactKey
+            }
+        )
+
+        $Canonical = $null
+
+        if($UidMatches.Count -eq 1){
+            $Canonical = $UidMatches[0]
+        }
+        elseif($UidMatches.Count -gt 1){
+            $HashMatches = @(
+                $UidMatches | Where-Object {
+                    $_.Hash -eq (Get-ContactHash $User)
+                }
+            )
+
+            if($HashMatches.Count -eq 1){
+                $Canonical = $HashMatches[0]
+            }
+        }
+        else{
+            $HashMatches = @(
+                $MailMatches | Where-Object {
+                    $_.Hash -eq (Get-ContactHash $User)
+                }
+            )
+
+            if($HashMatches.Count -eq 1){
+                $Canonical = $HashMatches[0]
+            }
+        }
+
+        if($null -eq $Canonical){
+            Write-Log "Cannot safely identify canonical CardDAV contact for e-mail: $MailKey. Leaving duplicates unchanged." "WARN"
+            continue
+        }
+
+        foreach($Contact in $MailMatches){
+            if($Contact.Href -eq $Canonical.Href){
+                continue
+            }
+
+            Remove-CardDAVContact $Contact
+            $DeletedHrefs[$Contact.Href] = $true
+            $Stats.Deleted++
+        }
+    }
+
+    #
+    # Delete removed users
+    #
+
+    $ADContactKeys=@{}
+
+    foreach($User in $ADUsers){
+        $UserKey = Get-ContactKey $User
+        $MailKey = Get-ContactMailKey $User
+
+        if(-not [string]::IsNullOrWhiteSpace($UserKey)){
+            $ADContactKeys[$UserKey] = $true
+        }
+
+        if(-not [string]::IsNullOrWhiteSpace($MailKey)){
+            $ADContactKeys["mail:$MailKey"] = $true
+        }
+    }
+
+    foreach($Contact in $RemoteContacts){
+
+        if($DeletedHrefs.ContainsKey($Contact.Href)){
+            continue
+        }
+
+        $RemoteKey = Get-ContactKey $Contact
+        $MailKey = Get-ContactMailKey $Contact
+
+        if(((-not [string]::IsNullOrWhiteSpace($RemoteKey)) -and
+            $ADContactKeys.ContainsKey($RemoteKey)) -or
+           ((-not [string]::IsNullOrWhiteSpace($MailKey)) -and
+            $ADContactKeys.ContainsKey("mail:$MailKey"))){
             continue
         }
 
@@ -249,5 +414,4 @@ finally{
     Close-CardDAV
 
 }
-
 
