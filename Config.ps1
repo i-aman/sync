@@ -38,7 +38,7 @@ $Global:Config = @{
 
     Username = "svc_carddav"
 
-    Password = 'Aaq1w2e3r$$'
+    Password = "bp9i6-RrmKC-amH4o-m6qs3-B6FBd"
 
     UserId = "svc_carddav"
 
