@@ -225,7 +225,9 @@ try{
 
             }
 
-            if($Existing.Hash -eq (Get-ContactHash $User))
+            if($Existing.Hash -eq (Get-ContactHash $User) -and
+               (ConvertTo-NormalizedString $Existing.DisplayName) -eq
+               (Get-ContactDisplayName $User))
             {
 
                 Write-Log "Skip : $($User.DisplayName)"
@@ -301,8 +303,21 @@ try{
         )
 
         $Canonical = $null
+        $DesiredDisplayName = Get-ContactDisplayName $User
+        $DisplayNameMatches = @(
+            $MailMatches | Where-Object {
+                (ConvertTo-NormalizedString $_.DisplayName) -eq $DesiredDisplayName
+            }
+        )
 
-        if($UidMatches.Count -eq 1){
+        if($DisplayNameMatches.Count -eq 1){
+            $Canonical = $DisplayNameMatches[0]
+        }
+        elseif($DisplayNameMatches.Count -gt 1){
+            Write-Log "Multiple CardDAV duplicates already have the expected display name for e-mail: $MailKey. Leaving them unchanged." "WARN"
+            continue
+        }
+        elseif($UidMatches.Count -eq 1){
             $Canonical = $UidMatches[0]
         }
         elseif($UidMatches.Count -gt 1){
@@ -414,4 +429,3 @@ finally{
     Close-CardDAV
 
 }
-
