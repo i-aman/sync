@@ -232,7 +232,9 @@ try{
 
             if($Existing.Hash -eq (Get-ContactHash $User) -and
                (ConvertTo-NormalizedString $Existing.DisplayName) -eq
-               (Get-ContactDisplayName $User))
+               (Get-ContactDisplayName $User) -and
+               (ConvertTo-NormalizedString $Existing.SortString) -eq
+               (ConvertTo-NormalizedString $User.Surname))
             {
 
                 Write-Log "Skip : $($User.DisplayName)"

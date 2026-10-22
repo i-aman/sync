@@ -241,6 +241,11 @@ function New-VCard {
         $Card += $Line
     }
 
+    if(-not [string]::IsNullOrWhiteSpace($User.Surname))
+    {
+        $Card += "SORT-STRING:$((Escape-VCardText $User.Surname))"
+    }
+
     $Line = New-VCardTextLine -Name "N" -Value (Get-VCardName $User)
 
     if($Line)

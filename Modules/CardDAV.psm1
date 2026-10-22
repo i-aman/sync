@@ -515,6 +515,8 @@ function ConvertFrom-VCard {
 
         Uid = ""
 
+        SortString = ""
+
         NeedsEncodingUpgrade = $false
 
         Href = $Href
@@ -565,6 +567,16 @@ function ConvertFrom-VCard {
                 }
 
                 if($ShouldCheckEncoding -and (Test-TextContainsNonAscii $NameValue))
+                {
+                    $Contact.NeedsEncodingUpgrade = $true
+                }
+            }
+
+            '^SORT-STRING(?:;[^:]*)?:(.*)$'
+            {
+                $Contact.SortString = Convert-FromVCardValue $Line $Matches[1]
+
+                if($ShouldCheckEncoding -and (Test-TextContainsNonAscii $Contact.SortString))
                 {
                     $Contact.NeedsEncodingUpgrade = $true
                 }
