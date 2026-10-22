@@ -136,12 +136,20 @@ function Get-ContactDisplayName {
     )
 
     $DisplayName = ConvertTo-NormalizedString $Contact.DisplayName
-
-    if ($Contact.PSObject.Properties.Name -notcontains "MiddleName") {
-        return $DisplayName
-    }
-
+    $GivenName = ConvertTo-NormalizedString $Contact.GivenName
     $MiddleName = ConvertTo-NormalizedString $Contact.MiddleName
+    $Surname = ConvertTo-NormalizedString $Contact.Surname
+
+    if (-not [string]::IsNullOrWhiteSpace($Surname) -and
+        -not [string]::IsNullOrWhiteSpace($GivenName)) {
+        $NameParts = @($Surname, $GivenName)
+
+        if (-not [string]::IsNullOrWhiteSpace($MiddleName)) {
+            $NameParts += $MiddleName
+        }
+
+        return $NameParts -join " "
+    }
 
     if ([string]::IsNullOrWhiteSpace($MiddleName)) {
         return $DisplayName
