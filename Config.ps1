@@ -80,7 +80,7 @@ $Global:Config = @{
 
     DryRun = $false
 
-    DeleteMissingContacts = $true
+    DeleteMissingContacts = $false
 
     UpdateExistingContacts = $true
 

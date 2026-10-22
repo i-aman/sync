@@ -854,6 +854,7 @@ function Backup-CardDAV {
         catch {
 
             Write-Exception $_.Exception
+            throw "CardDAV backup failed. Synchronization stopped before processing contacts."
 
         }
 

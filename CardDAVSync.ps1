@@ -115,6 +115,11 @@ try{
 
     Write-Log "Users found : $($ADUsers.Count)"
 
+    if($ADUsers.Count -eq 0)
+    {
+        throw "Active Directory returned no users. Synchronization stopped to prevent deleting all CardDAV contacts."
+    }
+
     Write-Host ""
     Write-Log "Reading CardDAV..."
 
@@ -278,6 +283,7 @@ try{
 
     $DeletedHrefs=@{}
 
+    if($Config.DeleteMissingContacts){
     foreach($MailKey in $UsersByMail.Keys){
         if($UsersByMail[$MailKey].Count -ne 1){
             continue
@@ -398,6 +404,10 @@ try{
 
         $Stats.Deleted++
 
+    }
+    }
+    else{
+        Write-Log "DeleteMissingContacts is disabled; duplicate and missing contacts will be retained."
     }
 
 }
