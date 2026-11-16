@@ -137,6 +137,13 @@ function ConvertTo-ContactObject {
         }
     }
 
+    $DisplayName = Get-ContactDisplayName ([PSCustomObject]@{
+        DisplayName = $DisplayName
+        GivenName = $GivenName
+        MiddleName = $MiddleName
+        Surname = $Surname
+    })
+
     return [PSCustomObject]@{
 
         DisplayName = $DisplayName
